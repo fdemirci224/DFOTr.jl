@@ -1,16 +1,17 @@
-<table style="border: none; width: 100%;">
+<table style="width: 100%; border: none;">
   <tr>
-    <td style="vertical-align: middle; width: 110px;">
+    <td style="width: 250px; vertical-align: middle;">
       <img src="https://github.com/user-attachments/assets/59c3f790-5bcc-4932-82bc-fe4ca168d15f" alt="Logo" width="250" height="250">
     </td>
     <td style="vertical-align: middle; text-align: right;">
-      <div style="font-size: 24px; font-weight: bold; line-height: 1.2;">
+      <div style="font-size: 26px; font-weight: 600; line-height: 1.2;">
         DERIVATIVE-FREE OPTIMIZATION<br>
         TRUST-REGION
       </div>
     </td>
   </tr>
 </table>
+
 
 
 ---
