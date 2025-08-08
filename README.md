@@ -35,12 +35,12 @@ x0 = [2.0, 3.0]
 result = DFOTr.dfo_tr(sphere, x0; verbosity=1, maxfev=200)
 
 
-println("x\*           = ", result.x)
-println("f(x\*)
-println("iterations   = ", result.iteration)
-println("successful   = ", result.iter_suc)
-println("func evals   = ", result.func_eval)
-println("final radius = ", result.delta)
+println("Optimal point: = ", result.x)
+println("Optimal value  = ", result.fun)
+println("iterations     = ", result.iteration)
+println("successful     = ", result.iter_suc)
+println("func evals     = ", result.func_eval)
+println("final radius   = ", result.delta)
 ```
 Verbosity levels:
 - 0: Silent
