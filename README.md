@@ -3,11 +3,18 @@
     <td style="vertical-align: middle; width: 110px;">
       <img src="https://github.com/user-attachments/assets/59c3f790-5bcc-4932-82bc-fe4ca168d15f" alt="Logo" width="300" height="300">
     </td>
-    <td style="vertical-align: middle;">
-      <h1 style="margin: 0; font-size: 24px;">DERIVATIVE-FREE OPTIMIZATION TRUST-REGION</h1>
+    <td style="vertical-align: middle; text-align: right;">
+      <h1 style="margin: 0; font-size: 24px; line-height: 1.2;">
+        DERIVATIVE-FREE OPTIMIZATION<br>
+        TRUST-REGION
+      </h1>
     </td>
   </tr>
 </table>
+
+---
+
+This repository provides a pure-Julia implementation of a Derivative-Free Optimization Trust-Region (DFO-TR) solver...
 
 ---
 
