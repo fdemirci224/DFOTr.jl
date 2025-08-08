@@ -34,8 +34,8 @@ x0 = [2.0, 3.0]
 # Run solver (verbosity=1 prints compact iteration table)
 result = DFOTr.dfo_tr(sphere, x0; verbosity=1, maxfev=200)
 
-println("x*           = ", result.x)
 println("f(x*)        = ", result.fun)
+println("x*           = ", result.x)
 println("iterations   = ", result.iteration)
 println("successful   = ", result.iter_suc)
 println("func evals   = ", result.func_eval)
