@@ -1,4 +1,4 @@
-<img width="1024" height="1024" alt="Image" src="https://github.com/user-attachments/assets/e5ab7fc0-52d1-47c1-830f-e339cf7696d8" />
+<img width="512" height="512" alt="Image" src="https://github.com/user-attachments/assets/e5ab7fc0-52d1-47c1-830f-e339cf7696d8" />
 
 # DFOTr.jl — Derivative-Free Optimization Trust-Region
 
