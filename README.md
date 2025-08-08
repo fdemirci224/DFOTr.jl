@@ -1,14 +1,7 @@
-<table width="100%">
-  <tr>
-    <td align="left" width="120">
-      <img src="https://github.com/user-attachments/assets/59c3f790-5bcc-4932-82bc-fe4ca168d15f" width="100" height="100" alt="DFO-TR Logo">
-    </td>
-    <td align="right">
-      <h1 style="margin: 0; font-size: 28px;">DERIVATIVE-FREE OPTIMIZATION TRUST-REGION</h1>
-    </td>
-  </tr>
-</table>
-
+<div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+  <img src="https://github.com/user-attachments/assets/59c3f790-5bcc-4932-82bc-fe4ca168d15f" alt="DFO-TR Logo" width="100" height="100">
+  <h1 style="margin: 0; font-size: 24px;">DERIVATIVE-FREE OPTIMIZATION TRUST-REGION</h1>
+</div>
 ---
 
 
