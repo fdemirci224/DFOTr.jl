@@ -1,9 +1,9 @@
 <table>
   <tr>
-    <td align="center" style="width: 250px;">
+    <td align="center" style="width: 300px;">
       <img src="https://github.com/user-attachments/assets/59c3f790-5bcc-4932-82bc-fe4ca168d15f" alt="Logo" width="250" height="250">
     </td>
-    <td align="left">
+    <td align="right">
       <h1 style="font-size: 24px; margin: 0;">
         DERIVATIVE-FREE OPTIMIZATION<br>
         TRUST-REGION
