@@ -25,7 +25,7 @@ This repository provides a pure-Julia implementation of a Derivative-Free Optimi
 
 ## Installation
 
-This package is not yet registered. You can add it locally during development or directly from a Git URL once published.
+This package is not yet registered. You can add it locally during development.
 
 - From a Git URL
   ```julia
