@@ -1,16 +1,17 @@
-<table style="width: 100%; border: none;">
+<table style="border: none; width: 100%;">
   <tr>
-    <td style="width: 250px; vertical-align: middle;">
-      <img src="https://github.com/user-attachments/assets/59c3f790-5bcc-4932-82bc-fe4ca168d15f" alt="Logo" width="250" height="250">
+    <td style="vertical-align: middle; width: 110px;">
+      <img src="https://github.com/user-attachments/assets/59c3f790-5bcc-4932-82bc-fe4ca168d15f" alt="Logo" width="100" height="100">
     </td>
     <td style="vertical-align: middle; text-align: right;">
-      <span style="font-size: 36px; font-weight: bold; line-height: 1.1;">
+      <h1 style="margin: 0; font-size: 24px; line-height: 1.2;">
         DERIVATIVE-FREE OPTIMIZATION<br>
         TRUST-REGION
-      </span>
+      </h1>
     </td>
   </tr>
 </table>
+
 ---
 
 This repository provides a pure-Julia implementation of a Derivative-Free Optimization Trust-Region (DFO-TR) solver. The method builds a local quadratic surrogate from function evaluations only (no gradients), solves a trust-region subproblem, and adapts the radius based on agreement between predicted and actual reductions.
