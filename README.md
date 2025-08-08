@@ -34,7 +34,6 @@ x0 = [2.0, 3.0]
 # Run solver (verbosity=1 prints compact iteration table)
 result = DFOTr.dfo_tr(sphere, x0; verbosity=1, maxfev=200)
 
-
 println("opt point     = ", result.x)
 println("opt value     = ", result.fun)
 println("iterations    = ", result.iteration)
