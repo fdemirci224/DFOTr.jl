@@ -1,6 +1,6 @@
-# DFOTr.jl - Main DFO-TR algorithm
+# DFOTrustRegion.jl - Main DFO-TR algorithm
 
-module DFOTr
+module DFOTrustRegion
 
 using LinearAlgebra
 using Statistics
