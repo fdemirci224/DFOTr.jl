@@ -27,15 +27,10 @@ This repository provides a pure-Julia implementation of a Derivative-Free Optimi
 
 This package is not yet registered. You can add it locally during development or directly from a Git URL once published.
 
-- Local path (recommended while developing):
+- From a Git URL
   ```julia
   using Pkg
-  Pkg.develop(path = "c:/path/to/DFOTr_TEST/DFOTr_TEST")
-  ```
-- From a Git URL (replace with your repo URL when available):
-  ```julia
-  using Pkg
-  Pkg.add(url = "https://github.com/your-user/DFOTr.jl.git")
+  Pkg.add(url = "https://github.com/fdemirci224/DFOTr.jl.git")
   ```
 
 ## Quick Start
