@@ -1,5 +1,5 @@
 <p align="center">
-  <img width="512" height="512" src="https://github.com/user-attachments/assets/59c3f790-5bcc-4932-82bc-fe4ca168d15f" alt="DFO-TR Logo" />
+  <img width="216" height="216" src="https://github.com/user-attachments/assets/59c3f790-5bcc-4932-82bc-fe4ca168d15f" alt="DFO-TR Logo" />
 </p>
 
 ---
