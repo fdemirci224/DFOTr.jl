@@ -1,8 +1,7 @@
 module TrustRegion
 
 """
-TrustRegion.jl - Trust region subproblem solver
-Port of trust_sub.py from https://github.com/TheClimateCorporation/dfo-algorithm
+TrustRegion.jl - Trust region subproblem solver for DFO-TR
 """
 
 using LinearAlgebra
@@ -13,40 +12,34 @@ export trust_sub
     secular_eqn(lambda_val::Float64, eigval::Vector{Float64}, alpha::Vector{Float64}, delta::Float64)
 
 Evaluate the secular equation at lambda_val.
-Corresponds to `_secular_eqn` in Python implementation.
 """
 function secular_eqn(lambda_val::Float64, eigval::Vector{Float64}, alpha::Vector{Float64}, delta::Float64)
     n = length(eigval)
-    
-    # Compute denominator: eigval + lambda_val
+
+    # Robust masked division: ratio_i = alpha_i / (eigval_i + lambda), zero where denom ~ 0
     denom = eigval .+ lambda_val
-    
-    # Handle division by zero
+    reltol = 1e-15
+    scale = abs.(eigval) .+ abs(lambda_val) .+ 1.0
+    mask = abs.(denom) .> (reltol .* scale)
+
     ratio = zeros(n)
-    for i in 1:n
-        if abs(denom[i]) > eps(Float64)
-            ratio[i] = alpha[i] / denom[i]
-        else
-            ratio[i] = 0.0  # Set to zero when denominator is zero
-        end
-    end
-    
+    @inbounds ratio[mask] .= alpha[mask] ./ denom[mask]
+
     # Compute norm squared
     norm_sq = sum(ratio.^2)
-    
-    # Return secular equation value
+
+    # Return secular equation value: 1/δ - 1/||ratio||
     if norm_sq > 0
-        return 1.0/delta - 1.0/sqrt(norm_sq)
+        return 1.0 / delta - 1.0 / sqrt(norm_sq)
     else
-        return 1.0/delta
+        return 1.0 / delta
     end
 end
 
 """
     rfzero(x::Float64, itbnd::Int, eigval::Vector{Float64}, alpha::Vector{Float64}, delta::Float64, tol::Float64)
 
-Find zero of secular equation to the right of x using modified bisection/interpolation.
-Corresponds to `rfzero` in Python implementation.
+Find root of secular equation using Ridders' method.
 """
 function rfzero(x::Float64, itbnd::Int, eigval::Vector{Float64}, alpha::Vector{Float64}, delta::Float64, tol::Float64)
     itfun = 0
@@ -156,52 +149,36 @@ end
     compute_step(alpha::Vector{Float64}, eigval::Vector{Float64}, V::Matrix{Float64}, lambda_val::Float64)
 
 Compute trust region step given eigendecomposition and Lagrange multiplier.
-Corresponds to `compute_step` in Python implementation.
 """
 function compute_step(alpha::Vector{Float64}, eigval::Vector{Float64}, V::Matrix{Float64}, lambda_val::Float64)
     n = length(eigval)
     w = eigval .+ lambda_val
-    
-    # Compute coefficients
+
+    # Robust, Python-equivalent safe division:
+    # coeff = alpha / (eigval + lambda), with zeros where denominator ~ 0
+    # Use a relative tolerance to decide near-zero denominators
+    reltol = 1e-15
+    scale = abs.(eigval) .+ abs(lambda_val) .+ 1.0
+    mask = abs.(w) .> (reltol .* scale)
+
     coeff = zeros(n)
-    for i in 1:n
-        if abs(w[i]) > eps(Float64)
-            coeff[i] = alpha[i] / w[i]
-        elseif abs(alpha[i]) < eps(Float64)
-            coeff[i] = 0.0
-        else
-            coeff[i] = Inf  # This case should be handled by caller
-        end
-    end
-    
-    # Replace NaN and Inf with 0
-    coeff[.!isfinite.(coeff)] .= 0.0
-    
+    @inbounds coeff[mask] .= alpha[mask] ./ w[mask]
+
     # Compute step
     s = V * coeff
     nrms = norm(s)
-    
+
     return coeff, s, nrms, w
 end
 
 """
-    trust_sub(g::Vector{Float64}, H::Matrix{Float64}, delta::Float64)
+    trust_sub(g, H, delta; verbosity=0)
 
 Solve trust region subproblem: min g'*s + 0.5*s'*H*s subject to ||s|| <= delta
 
-Uses More-Sorensen approach with eigendecomposition and secular equation.
-Corresponds to `trust_sub` in Python implementation.
-
-# Arguments
-- `g`: Gradient vector
-- `H`: Hessian matrix
-- `delta`: Trust region radius
-
-# Returns
-- `s`: Trust region step
-- `val`: Predicted reduction in objective
+Uses More-Sorensen method with eigendecomposition.
 """
-function trust_sub(g::Vector{Float64}, H::Matrix{Float64}, delta::Float64)
+function trust_sub(g::Vector{Float64}, H::Matrix{Float64}, delta::Float64; verbosity::Int=0)
     tol = 1e-12
     tol_seqeq = 1e-8
     itbnd = 50
@@ -210,8 +187,15 @@ function trust_sub(g::Vector{Float64}, H::Matrix{Float64}, delta::Float64)
     
     n = length(g)
     
+    # Initialize variables that must be defined in all paths
+    s = zeros(n)
+    coeff = zeros(n)
+    nrms = 0.0
+    w = zeros(n)
+    
     # Eigendecomposition of symmetrized Hessian
-    H_sym = 0.5 * (H + H')
+    # D, V = LA.eigh(0.5 * (H.T + H))
+    H_sym = Symmetric(0.5 * (H + H'))  
     eigval, V = eigen(H_sym)
     
     # Find minimum eigenvalue
@@ -220,10 +204,16 @@ function trust_sub(g::Vector{Float64}, H::Matrix{Float64}, delta::Float64)
     
     # Project gradient onto eigenvector basis
     alpha = -V' * g
-    sig = sign(alpha[jmin]) + (alpha[jmin] == 0 ? 1 : 0)
+    # Robust augmentation orientation: choose direction that decreases model
+    # Equivalent to sig = -sign(dot(V[:, jmin], g)), with near-zero safeguard
+    vmin = V[:, jmin]
+    vmin_g = dot(vmin, g)
+    eps_scale = 1.0e-14 * max(norm(g), 1.0)
+    sig = abs(vmin_g) < eps_scale ? 1.0 : -sign(vmin_g)
     
     lambda_val = 0.0
     key = 0
+    laminit = 0.0
     
     # Positive definite case
     if mineig > 0
@@ -263,26 +253,58 @@ function trust_sub(g::Vector{Float64}, H::Matrix{Float64}, delta::Float64)
         
         # Handle hard case
         if key > 2
-            # Zero out components where eigval + lambda is nearly zero
-            alpha_mod = copy(alpha)
-            for i in 1:n
-                if abs(eigval[i] + lambda_val) < 10 * eps(Float64) * max(abs(eigval[i]), 1.0)
-                    alpha_mod[i] = 0.0
+            # Hard case: solution is on the boundary.
+            lambda_val = -mineig  # Default lambda for hard case
+            if jmin > 0 && abs(alpha[jmin]) < 1.0e-8 * norm(alpha)
+                if verbosity >= 4
+                    println("--- HARD CASE ---")
                 end
-            end
-            
-            coeff, s, nrms, w = compute_step(alpha_mod, eigval, V, lambda_val)
-            
-            # Add component in null space if step too small
-            if nrms < s_factor * delta
-                beta = sqrt(delta^2 - nrms^2)
-                s += beta * sig * V[:, jmin]
-            end
-            
-            # Solve secular equation if step too large
-            if nrms > b_factor * delta
-                lambda_val, c, count = rfzero(laminit, itbnd, eigval, alpha_mod, delta, tol)
+                lambda_val = -eigval[jmin]
+                if verbosity >= 4
+                    println("Initial lambda_val = ", lambda_val)
+                end
+                
+                alpha_mod = copy(alpha)
+                alpha_mod[jmin] = 0.0
+                
                 coeff, s, nrms, w = compute_step(alpha_mod, eigval, V, lambda_val)
+                if verbosity >= 4
+                    println("After first compute_step: nrms = ", nrms, ", delta = ", delta)
+                end
+
+                # This logic must exactly match the Python reference's if/elif structure.
+                if nrms < s_factor * delta
+                    # Add component in null space if step too small
+                    beta = sqrt(delta^2 - nrms^2)
+                    s += beta * sig * V[:, jmin]
+                    if verbosity >= 4
+                        println("Step too small. beta = ", beta, ", new_nrms = ", norm(s))
+                    end
+                elseif nrms > b_factor * delta
+                    # Re-solve secular equation if step too large
+                    if verbosity >= 4
+                        println("Step too large. Calling rfzero...")
+                    end
+                    lambda_val, c, count = rfzero(laminit, itbnd, eigval, alpha_mod, delta, tol)
+                    if verbosity >= 4
+                        println("rfzero returned lambda_val = ", lambda_val)
+                    end
+                    coeff, s, nrms, w = compute_step(alpha_mod, eigval, V, lambda_val)
+                    if verbosity >= 4
+                        println("After rfzero and compute_step: nrms = ", nrms)
+                    end
+                end
+                if verbosity >= 4
+                    println("--- END HARD CASE ---")
+                end
+            else
+                # Simple hard case: compute step with lambda = -mineig and add null-space component
+                coeff, s, nrms, w = compute_step(alpha, eigval, V, lambda_val)
+                # Augment along the minimum-eigenvalue direction to reach the boundary
+                if nrms < (1.0 - 1e-14) * delta
+                    beta = sqrt(max(delta^2 - nrms^2, 0.0))
+                    s += beta * sig * V[:, jmin]
+                end
             end
         end
     end

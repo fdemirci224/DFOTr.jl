@@ -1,5 +1,4 @@
-# ModelBuilder.jl - Quadratic model construction
-# Port of quad_Frob.py from https://github.com/TheClimateCorporation/dfo-algorithm
+# ModelBuilder.jl - Quadratic model construction for DFO-TR
 
 module ModelBuilder
 
@@ -8,144 +7,107 @@ using LinearAlgebra
 export quad_frob
 
 """
-    compute_coeffs(W::Matrix{Float64}, tol_svd::Float64, b::Vector{Float64}, option::String)
-
-Compute model coefficients by solving the system of equations using SVD.
-Corresponds to `_compute_coeffs` in Python implementation.
-"""
-function compute_coeffs(W::Matrix{Float64}, tol_svd::Float64, b::Vector{Float64}, option::String)
-    if option == "partial"
-        U, S, Vt = svd(W)
-    else
-        U, S, Vt = svd(W, full=false)
-    end
-    
-    # Regularize small singular values
-    S[S .< tol_svd] .= tol_svd
-    Sinv = diagm(1.0 ./ S)
-    V = Vt'
-    
-    # Compute coefficients
-    lambda_0 = V * Sinv * U' * b
-    return lambda_0
-end
-
-"""
-    quad_frob(X::Matrix{Float64}, F_values::Vector{Float64})
+    quad_frob(X, F_values)
 
 Build quadratic model from sample points and function values.
-Returns Hessian H and gradient g for model: g'*s + 0.5*s'*H*s + α
+Returns Hessian H and gradient g for model: g'*s + 0.5*s'*H*s + constant.
 
-If number of points < (n+1)(n+2)/2, builds minimum Frobenius norm model.
-Otherwise, builds full interpolation model.
-
-Corresponds to `quad_Frob` in Python implementation.
-
-# Arguments
-- `X`: Sample points matrix (n × m)
-- `F_values`: Function values at sample points (m,)
-
-# Returns
-- `H`: Hessian matrix (n × n)
-- `g`: Gradient vector (n,)
+Uses minimum Frobenius norm model if underdetermined, full interpolation otherwise.
 """
-function quad_frob(X::Matrix{Float64}, F_values::Vector{Float64})
-    # Tolerance for SVD regularization
-    eps_val = eps(Float64)
-    tol_svd = eps_val^5
-    
+function quad_frob(X::AbstractMatrix{Float64}, F_values::AbstractVector{Float64})
+    tol_svd = eps(Float64)^5
     n, m = size(X)
     
-    # Initialize outputs
     H = zeros(n, n)
-    g = zeros(n)
+    g = zeros(n, 1)
     
-    # Shift points to origin (center at first point)
-    Y = X .- X[:, 1:1]  # Broadcasting to subtract first column from all columns
+    # Shift points relative to first point
+    Y = zeros(n, m)
+    x0 = X[:, 1]
+    @inbounds for i in 1:m
+        for j in 1:n
+            Y[j, i] = X[j, i] - x0[j]
+        end
+    end
     
-    # Maximum points for full quadratic model
     max_points = div((n+1) * (n+2), 2)
     
     if m < max_points
-        # Minimum Frobenius norm model (underdetermined case)
-        # Solve KKT conditions from page 81 of Intro to DFO book
-        
+        # Minimum Frobenius norm model
         b = vcat(F_values, zeros(n+1))
         
-        # Construct quadratic terms matrix A
-        A = 0.5 * (Y' * Y).^2
+        YTY = Y' * Y
+        A = 0.5 * (YTY .* YTY)
         
-        # Build constraint matrix W
-        # Top part: [A, ones, Y']
-        top = hcat(A, ones(m, 1), Y')
-        
-        # Bottom part: [ones'; Y; zeros]
-        temp = vcat(ones(1, m), Y)
-        bottom = hcat(temp, zeros(n+1, n+1))
-        
+        C = hcat(ones(m, 1), Y')
+        top = hcat(A, C)
+        bottom = hcat(C', zeros(n + 1, n + 1))
         W = vcat(top, bottom)
         
-        # Solve for coefficients
-        lambda_0 = compute_coeffs(W, tol_svd, b, "partial")
+        Fqr = qr(W, ColumnNorm())
+        lambda_0 = Fqr \ b
         
-        # Extract gradient (linear coefficients)
         g = lambda_0[m+2:end]
         
-        # Reconstruct Hessian from quadratic coefficients
-        H = zeros(n, n)
-        for j in 1:m
-            y_j = Y[:, j]
-            H += lambda_0[j] * (y_j * y_j')
+        fill!(H, 0.0)
+        @inbounds for j in 1:m
+            coeff = lambda_0[j]
+            if abs(coeff) > 1e-16
+                y_j = @view Y[:, j]
+                for i1 in 1:n
+                    for i2 in 1:n
+                        H[i1, i2] += coeff * y_j[i1] * y_j[i2]
+                    end
+                end
+            end
         end
         
     else
-        # Full interpolation model (determined/overdetermined case)
+        # Full interpolation model
         b = F_values
         
-        # Build polynomial basis matrix
-        # Number of quadratic terms: n(n+1)/2
         num_quad_terms = div(n * (n + 1), 2)
         phi_Q = zeros(m, num_quad_terms)
         
-        for i in 1:m
-            y = Y[:, i]
-            
-            # Construct upper triangular part of y*y' - 0.5*diag(y.^2)
-            aux_H = y * y' - 0.5 * diagm(y.^2)
-            
-            # Extract upper triangular elements
-            aux = Float64[]
-            for j in 1:n
-                append!(aux, aux_H[j:n, j])
+        @inbounds for i in 1:m
+            y = @view Y[:, i]
+            aux_idx = 1
+            for j1 in 1:n
+                for j2 in j1:n
+                    if j1 == j2
+                        phi_Q[i, aux_idx] = 0.5 * y[j1]^2
+                    else
+                        phi_Q[i, aux_idx] = y[j1] * y[j2]
+                    end
+                    aux_idx += 1
+                end
             end
-            
-            phi_Q[i, :] = aux
         end
         
-        # Build full constraint matrix: [ones, Y', phi_Q]
         W = hcat(ones(m, 1), Y', phi_Q)
         
-        # Solve for coefficients
-        lambda_0 = compute_coeffs(W, tol_svd, b, "full")
-        
-        # Extract gradient
+        Fqr = qr(W, ColumnNorm())
+        lambda_0 = Fqr \ b
+
         g = lambda_0[2:n+1]
         
-        # Reconstruct symmetric Hessian
-        H = zeros(n, n)
+        fill!(H, 0.0)
         cont = n + 2
         
-        for j in 1:n
+        @inbounds for j in 1:n
             len_j = n - j + 1
-            H[j:n, j] = lambda_0[cont:cont+len_j-1]
+            for k in 1:len_j
+                H[j+k-1, j] = lambda_0[cont + k - 1]
+            end
             cont += len_j
         end
         
-        # Make H symmetric
-        H = H + H' - diagm(diag(H))
+        # Build symmetric Hessian from lower triangular part
+        H_diag = diag(H)
+        H = H + H' - diagm(H_diag)
     end
     
-    return H, g
+    return H, vec(g)
 end
 
 end # module
