@@ -19,7 +19,7 @@
 
 This repository provides a pure-Julia implementation of a Derivative-Free Optimization Trust-Region (DFO-TR) solver. The method builds a local quadratic surrogate from function evaluations only (no gradients), solves a trust-region subproblem, and adapts the radius based on agreement between predicted and actual reductions.
 
-- Module: `DFOTr`
+- Module: `DFOTrustRegion`
 - Main entry point: `dfo_tr()`
 - Dependencies: Julia standard libraries only (LinearAlgebra, Statistics, Printf)
 
@@ -30,13 +30,13 @@ This package is not yet registered. You can add it locally during development or
 - From a Git URL
   ```julia
   using Pkg
-  Pkg.add(url = "https://github.com/fdemirci224/DFOTr.jl.git")
+  Pkg.add(url = "https://github.com/fdemirci224/DFOTrustRegion.jl.git")
   ```
 
 ## Quick Start
 
 ```julia
-using DFOTr
+using DFOTrustRegion
 
 # Black-box objective
 sphere(x) = sum(x.^2)
@@ -95,7 +95,7 @@ result = dfo_tr(sphere, x0; init_delta=0.5, maxfev=300, tol_norm_g=1e-8, verbosi
 - __Stopping__: Triggered when tolerances are met (small gradient norm, small |Δf|, or small radius) or when `maxfev` is reached.
 
 Key files:
-- `src/DFOTr.jl`: `dfo_tr` driver and types (`DFOParams`, `DFOResult`).
+- `src/DFOTrustRegion.jl`: `dfo_tr` driver and types (`DFOParams`, `DFOResult`).
 - `src/ModelBuilder.jl`: Quadratic model construction and regularization.
 - `src/TrustRegion.jl`: Trust-region subproblem solver.
 - `src/Utils.jl`: Utilities and sample-set management.
@@ -103,7 +103,7 @@ Key files:
 
 ## Result Object
 
-`DFOTr.DFOResult` contains:
+`DFOResult` contains:
 - `x::Vector{Float64}`: final point
 - `fun::Float64`: final objective value
 - `iteration::Int`: number of iterations
@@ -116,7 +116,7 @@ Key files:
 Run the tests via Pkg:
 ```julia
 using Pkg
-Pkg.test("DFOTr")
+Pkg.test("DFOTrustRegion")
 ```
 
 ## References
