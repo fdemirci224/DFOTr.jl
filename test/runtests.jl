@@ -2,7 +2,7 @@
 
 using Test
 using LinearAlgebra
-using DFOTr
+using DFOTrustRegion
 
 
 """
