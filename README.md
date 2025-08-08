@@ -114,4 +114,4 @@ Pkg.test("DFOTr")
 
 ## License
 
-This project is licensed under the MIT License. See `LICENSE`.
+This project is licensed under the EPL-2.0 license. See `LICENSE`.
