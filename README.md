@@ -20,7 +20,7 @@
 This repository provides a pure-Julia implementation of a Derivative-Free Optimization Trust-Region (DFO-TR) solver. The method builds a local quadratic surrogate from function evaluations only (no gradients), solves a trust-region subproblem, and adapts the radius based on agreement between predicted and actual reductions.
 
 - Module: `DFOTr`
-- Main entry point: `DFOTr.dfo_tr()`
+- Main entry point: `dfo_tr()`
 - Dependencies: Julia standard libraries only (LinearAlgebra, Statistics, Printf)
 
 ## Installation
@@ -44,7 +44,7 @@ sphere(x) = sum(x.^2)
 x0 = [2.0, 3.0]
 
 # Run solver (verbosity=1 prints compact iteration table)
-result = DFOTr.dfo_tr(sphere, x0; verbosity=1, maxfev=200)
+result = dfo_tr(sphere, x0; verbosity=1, maxfev=200)
 
 println("opt point     = ", result.x)
 println("opt value     = ", result.fun)
@@ -60,10 +60,10 @@ Verbosity levels:
 
 ## Algorithm Options
 
-Options are provided via `DFOTr.DFOParams` and can be overridden as keywords in `DFOTr.dfo_tr`.
+Options are provided via `DFOParams` and can be overridden as keywords in `dfo_tr`.
 
 ```julia
-DFOTr.DFOParams(; 
+DFOParams(; 
     init_delta::Float64 = 1.0,      # initial trust-region radius
     tol_delta::Float64 = 1e-10,     # minimum radius to stop
     max_delta::Float64 = 100.0,     # maximum radius
@@ -83,7 +83,7 @@ DFOTr.DFOParams(;
 
 Example:
 ```julia
-result = DFOTr.dfo_tr(sphere, x0; init_delta=0.5, maxfev=300, tol_norm_g=1e-8, verbosity=2)
+result = dfo_tr(sphere, x0; init_delta=0.5, maxfev=300, tol_norm_g=1e-8, verbosity=2)
 ```
 
 ## Algorithm Description
