@@ -1,13 +1,3 @@
-# DFOTr_TEST
-
-Derivative-free Trust Region Algorithm implemented in Julia.
-
-## Project Structure
-
-- `src/` contains core modules for the algorithm.
-- `test/` holds test scripts.
----
-
 # DFOTr.jl — Derivative-Free Optimization Trust-Region
 
 This repository provides a pure-Julia implementation of a Derivative-Free Optimization Trust-Region (DFO-TR) solver. The method builds a local quadratic surrogate from function evaluations only (no gradients), solves a trust-region subproblem, and adapts the radius based on agreement between predicted and actual reductions.
@@ -51,10 +41,9 @@ println("successful   = ", result.iter_suc)
 println("func evals   = ", result.func_eval)
 println("final radius = ", result.delta)
 ```
-
 Verbosity levels:
 - 0: Silent
-- 1: Compact iteration table (aligned)
+- 1: Compact iteration table
 - 2: Detailed diagnostics per iteration with optional CSV/JSON logging
 
 ## Algorithm Options
