@@ -4,13 +4,14 @@
       <img src="https://github.com/user-attachments/assets/59c3f790-5bcc-4932-82bc-fe4ca168d15f" alt="Logo" width="250" height="250">
     </td>
     <td style="vertical-align: middle; text-align: right;">
-      <h1 style="margin: 0; font-size: 24px; line-height: 1.2;">
+      <div style="font-size: 24px; font-weight: bold; line-height: 1.2;">
         DERIVATIVE-FREE OPTIMIZATION<br>
         TRUST-REGION
-      </h1>
+      </div>
     </td>
   </tr>
 </table>
+
 
 ---
 
