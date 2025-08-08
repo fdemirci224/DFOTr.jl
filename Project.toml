@@ -1,6 +1,6 @@
 name = "DFOTr"
 uuid = "9c8d5c2c-3c1a-4b4e-9c0d-6c2b9d6b9e1f"
-authors = ["Fatih Demirci"]
+authors = ["Fatih Demirci <f.demirci24@imperial.ac.uk>"]
 version = "0.1.0"
 
 [compat]
