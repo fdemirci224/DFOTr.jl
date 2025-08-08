@@ -80,7 +80,7 @@ function run_test_function(name::String, func, x0::Vector{Float64},
     println("Starting point: $(round.(x0', digits=4))")
     println("Expected minimum: $expected_min at $(round.(expected_x', digits=4))")
     try
-        result = DFOTr.dfo_tr(func, x0, verbosity=1, maxfev=maxfev, 
+        result = dfo_tr(func, x0, verbosity=1, maxfev=maxfev, 
                            tol_f=solver_tol_f, tol_norm_g=solver_tol_norm_g)
         converged = result.fun <= expected_min + tol_f
         println("Results:")
@@ -203,7 +203,7 @@ println("="^80)
         println("Testing: Rastrigin Function (Multi-modal)")
         println("Note: This function has many local minima - convergence to global minimum not guaranteed")
         try
-            result = DFOTr.dfo_tr(rastrigin, [1.5, 1.5], verbosity=1, maxfev=300,
+            result = dfo_tr(rastrigin, [1.5, 1.5], verbosity=1, maxfev=300,
                                tol_f=1e-8, tol_norm_g=1e-8)
             println("Results:")
             println("  Final objective: $(round(result.fun, digits=8))")
@@ -228,7 +228,7 @@ println("="^80)
     @testset "Edge Cases and Robustness" begin
         println("\n" * "="^60)
         println("Testing: Small Initial Trust Region")
-        result = DFOTr.dfo_tr(sphere, [1.0, 1.0], verbosity=0, 
+        result = dfo_tr(sphere, [1.0, 1.0], verbosity=0, 
                            init_delta=1e-6, maxfev=50)
         @test result.func_eval > 0
         @test isfinite(result.fun)
@@ -237,7 +237,7 @@ println("="^80)
         println("\n" * "="^60)
         println("Testing: Single Variable Function")
         sphere_1d(x) = x[1]^2
-        result_1d = DFOTr.dfo_tr(sphere_1d, [3.0], verbosity=0, maxfev=50)
+        result_1d = dfo_tr(sphere_1d, [3.0], verbosity=0, maxfev=50)
         @test result_1d.fun < 1e-2
         @test abs(result_1d.x[1]) < 0.5
         println("  Status: PASSED ✓")
@@ -246,7 +246,7 @@ println("="^80)
         println("Testing: Higher Dimensional Function (5D)")
         sphere_5d(x) = sum(x.^2)
         x0_5d = ones(5) * 2.0
-        result_5d = DFOTr.dfo_tr(sphere_5d, x0_5d, verbosity=0, maxfev=200)
+        result_5d = dfo_tr(sphere_5d, x0_5d, verbosity=0, maxfev=200)
         @test result_5d.func_eval > 0
         @test result_5d.fun < 1.0
         println("  Final objective: $(round(result_5d.fun, digits=6))")
