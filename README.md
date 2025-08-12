@@ -25,9 +25,15 @@ This repository provides a pure-Julia implementation of a Derivative-Free Optimi
 
 ## Installation
 
-This package is not yet registered. You can add it locally during development.
+DFO-TR is registered and installed through 
 
-- From a Git URL
+- the Julia package manager:
+  ```julia
+  using Pkg
+  Pkg.add("DFOTrustRegion")
+  ```
+
+- or latest master directly from github:
   ```julia
   using Pkg
   Pkg.add(url = "https://github.com/fdemirci224/DFOTrustRegion.jl.git")
